@@ -10,11 +10,11 @@ resource "google_compute_firewall" "ssh" {
 
   allow {
     protocol = "tcp"
-    ports    = ["22"]
+    ports    = ["22","8080"]
   }
 
   target_tags   = ["${var.vpc_network}-firewall-ssh"]
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = var.source_ranges
   depends_on = [ google_compute_network.vpc_network ]
 }
 
@@ -58,7 +58,7 @@ resource "google_compute_instance" "vm_instance" {
 
     metadata = {
         sshKeys = "${var.ssh_user}:${var.ssh_key}"
+        startup_script = file("startup.sh")
     }
 
-    metadata_startup_script = file("./startup.sh")
 }
