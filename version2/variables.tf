@@ -1,5 +1,5 @@
 variable project_name { 
-    default = "terraedit-365302"
+    default = "adrabenche"
 }
 
 variable region { 

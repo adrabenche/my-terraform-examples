@@ -4,34 +4,19 @@ provider "google" {
     zone    = var.zone
 }
 
-resource "google_compute_firewall" "ssh" {
-  name    = "${var.firewall_rules}-ssh"
+resource "google_compute_firewall" "default" {
+  name    = var.firewall_rules
   network = var.vpc_network
 
   allow {
     protocol = "tcp"
-    ports    = ["22","8080"]
+    ports    = ["22","8080","30000-32767"]
   }
 
   target_tags   = ["${var.vpc_network}-firewall-ssh"]
-  source_ranges = var.source_ranges
+  source_ranges = ["${chomp(data.http.myip.body)}/32"]
   depends_on = [ google_compute_network.vpc_network ]
 }
-
-resource "google_compute_firewall" "jenkins" {
-  name    = "${var.firewall_rules}-jenkins"
-  network = var.vpc_network
-
-  allow {
-    protocol = "tcp"
-    ports    = ["8080"]
-  }
-
-  target_tags   = ["${var.vpc_network}-firewall-jenkins"]
-  source_ranges = ["0.0.0.0/0"]
-  depends_on = [ google_compute_network.vpc_network ]
-}
-
 
 resource "google_compute_network" "vpc_network" {
     name = var.vpc_network
@@ -52,13 +37,10 @@ resource "google_compute_instance" "vm_instance" {
     }
     
     tags = [ 
-        "${var.vpc_network}-firewall-ssh",
-        "${var.vpc_network}-firewall-jenkins"
+        "${var.vpc_network}-firewall-ssh" 
     ]
 
     metadata = {
         sshKeys = "${var.ssh_user}:${var.ssh_key}"
-        startup_script = file("startup.sh")
     }
-
 }
